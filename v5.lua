@@ -1,6 +1,7 @@
---// VALLEY PRISON - HIGH VISIBILITY CONTROLLER V4 (WITH MINIMIZE & CLOSE)
+--// VALLEY PRISON - HIGH VISIBILITY CONTROLLER V5 (FIXED HITBOX)
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
+local DragHeader = Instance.new("Frame") -- Külön sáv a húzáshoz!
 local ToggleBtn = Instance.new("TextButton")
 local WeaponBtn = Instance.new("TextButton")
 local TitleLabel = Instance.new("TextLabel")
@@ -28,11 +29,18 @@ MainFrame.BorderSizePixel = 4
 MainFrame.Position = UDim2.new(0.4, 0, 0.4, 0)
 MainFrame.Size = UDim2.new(0, 260, 0, 160)
 MainFrame.Active = true
-MainFrame.Selectable = true
-MainFrame.ZIndex = 1
 MainFrame.ClipsDescendants = true
+MainFrame.ZIndex = 1
 
-TitleLabel.Parent = MainFrame
+-- KÜLÖNÁLLÓ FELSŐ SÁV A HÚZÁSHOZ (Így nem zavarja az alsó gombokat)
+DragHeader.Name = "DragHeader"
+DragHeader.Parent = MainFrame
+DragHeader.BackgroundTransparency = 1
+DragHeader.Size = UDim2.new(1, 0, 0, 35)
+DragHeader.ZIndex = 2
+DragHeader.Active = true
+
+TitleLabel.Parent = DragHeader
 TitleLabel.BackgroundTransparency = 1
 TitleLabel.Position = UDim2.new(0, 10, 0, 5)
 TitleLabel.Size = UDim2.new(0, 150, 0, 25)
@@ -41,11 +49,11 @@ TitleLabel.Text = "VALLEY DROPPER"
 TitleLabel.TextColor3 = Color3.fromRGB(0, 162, 255)
 TitleLabel.TextSize = 14
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-TitleLabel.ZIndex = 2
+TitleLabel.ZIndex = 3
 
 -- MINIMIALIZÁLÓ GOMB (-)
 MinimizeBtn.Name = "MinimizeBtn"
-MinimizeBtn.Parent = MainFrame
+MinimizeBtn.Parent = DragHeader
 MinimizeBtn.BackgroundTransparency = 1
 MinimizeBtn.Position = UDim2.new(0, 190, 0, 5)
 MinimizeBtn.Size = UDim2.new(0, 30, 0, 25)
@@ -57,7 +65,7 @@ MinimizeBtn.ZIndex = 10
 
 -- BEZÁRÓ GOMB (X)
 CloseBtn.Name = "CloseBtn"
-CloseBtn.Parent = MainFrame
+CloseBtn.Parent = DragHeader
 CloseBtn.BackgroundTransparency = 1
 CloseBtn.Position = UDim2.new(0, 220, 0, 5)
 CloseBtn.Size = UDim2.new(0, 30, 0, 25)
@@ -67,7 +75,7 @@ CloseBtn.TextColor3 = Color3.fromRGB(230, 70, 70)
 CloseBtn.TextSize = 14
 CloseBtn.ZIndex = 10
 
--- DROP GOMB
+-- DROP GOMB (ZIndex megemelve a biztos klikkért)
 ToggleBtn.Name = "ToggleBtn"
 ToggleBtn.Parent = MainFrame
 ToggleBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
@@ -78,7 +86,7 @@ ToggleBtn.Font = Enum.Font.GothamBold
 ToggleBtn.Text = "DROP: KIKAPCSOLVA"
 ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleBtn.TextSize = 14
-ToggleBtn.ZIndex = 10
+ToggleBtn.ZIndex = 20
 
 -- FEGYVER GOMB
 WeaponBtn.Name = "WeaponBtn"
@@ -91,12 +99,12 @@ WeaponBtn.Font = Enum.Font.GothamBold
 WeaponBtn.Text = "FEGYVER: Model 870"
 WeaponBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
 WeaponBtn.TextSize = 12
-WeaponBtn.ZIndex = 10
+WeaponBtn.ZIndex = 20
 
--- Ablakmozgatás logikája (A fejléc üres részét megfogva húzható)
+-- Ablakmozgatás logikája (KIZÁRÓLAG a DragHeader sávon működik!)
 local UserInputService = game:GetService("UserInputService")
 local dragging, dragInput, dragStart, startPos
-MainFrame.InputBegan:Connect(function(input)
+DragHeader.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
         dragStart = input.Position
@@ -106,7 +114,7 @@ MainFrame.InputBegan:Connect(function(input)
         end)
     end
 end)
-MainFrame.InputChanged:Connect(function(input)
+DragHeader.InputChanged:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end
 end)
 UserInputService.InputChanged:Connect(function(input)
@@ -133,10 +141,7 @@ MinimizeBtn.Activated:Connect(function()
     end
 end)
 
--- Bezárás működése
-CloseBtn.Activated:Connect(function()
-    ScreenGui:Destroy()
-end)
+CloseBtn.Activated:Connect(function() ScreenGui:Destroy() end)
 
 -- [ JÁTÉK LOGIKA ]
 local _G = _G or {}
@@ -163,7 +168,7 @@ task.spawn(function()
     end
 end)
 
--- Kattintás kezelés
+-- Kattintás kezelés (Most már 100%, hogy eléri a gombot)
 ToggleBtn.Activated:Connect(function()
     _G.Dropping = not _G.Dropping
     if _G.Dropping then
