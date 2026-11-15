@@ -1,26 +1,53 @@
-local Remote = game:GetService("ReplicatedStorage").Events.GiveWeapon
-local WeaponName = "M4A1"
+-- Modern UI a Valley Prison Fegyver Spawnolóhoz
+local Library = loadstring(game:HttpGet("https://githubusercontent.com"))()
+local Window = Library.CreateLib("Valley Prison Weapon Dropper", "DarkTheme")
 
-while true do
-    -- Ellenőrizzük, hogy a karakterünk még él-e, különben a script összeomolhat
-    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        
-        -- Fegyver lekérése a szervertől
-        Remote:FireServer(WeaponName) 
-        
-        -- Megvárjuk, amíg a fegyver tényleg bekerül a táskába (maximum 1 másodpercet vár, így nem akad ki a kód)
-        local tool = game.Players.LocalPlayer.Backpack:WaitForChild(WeaponName, 1)
-        
-        if tool then
-            -- Áttesszük a Workspace-be (a játéktérbe), így kiesik a kezünkből
-            tool.Parent = game.Workspace
-            
-            -- Ide írd be a börtön udvarának a pontos koordinátáit: Vector3.new(X, Y, Z)
-            tool:MoveTo(Vector3.new(100, 10, 50)) 
+-- Fő beállítások tárolása
+local _G = _G or {}
+_G.Dropping = false
+_G.CurrentWeapon = "Model 870 Tactical"
+_G.DropLocation = Vector3.new(100, 10, 50) -- Ide írd majd a börtön udvar koordinátáját
+_G.DelayTime = 0.1
+
+local Remote = game:GetService("ReplicatedStorage").Events.GiveWeapon
+
+-- Háttérben futó hurok (Loop)
+task.spawn(function()
+    while true do
+        if _G.Dropping then
+            if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                -- Fegyver kérése
+                Remote:FireServer(_G.CurrentWeapon) 
+                
+                -- Várakozás a fegyverre az inventoryban
+                local tool = game.Players.LocalPlayer.Backpack:WaitForChild(_G.CurrentWeapon, 0.5)
+                
+                if tool then
+                    tool.Parent = game.Workspace
+                    tool:MoveTo(_G.DropLocation) 
+                end
+            end
         end
+        task.wait(_G.DelayTime)
     end
-    
-    -- BEÁLLÍTÁS: Itt tudod szabályozni a sebességet. 
-    -- A 0.1 vagy 0.15 a legbiztonságosabb "gyors" érték. Ha még így is kidobna a játék, emeld fel 0.25-re.
-    task.wait(0.1) 
-end
+end)
+
+-- UI Lapok és Gombok létrehozása
+local MainTab = Window:NewTab("Főmenü")
+local MainSection = MainTab:NewSection("Fegyver Drop")
+
+-- BE / KI Kapcsoló gomb
+MainSection:NewToggle("Drop Indítása / Leállítása", "Be- és kikapcsolja a fegyverek potyogtatását.", function(state)
+    _G.Dropping = state
+end)
+
+-- Fegyver választó legördülő menü (Dropdown)
+-- Ide írd be azokat a neveket pontosan, amiket Dex-ben találsz!
+MainSection:NewDropdown("Fegyver Kiválasztása", "Válaszd ki, melyik fegyvert akarod spawnolni.", {"Model 870 Tactical", "M4A1", "Glock 17", "AK-47"}, function(current)
+    _G.CurrentWeapon = current
+end)
+
+-- Sebesség állító (Slider) - Így játék közben is állíthatod a biztonsági időzítést!
+MainSection:NewSlider("Sebesség (Késleltetés)", "Minél kisebb, annál gyorsabb. Ajánlott: 0.1 - 0.2", 50, 10, function(s)
+    _G.DelayTime = s / 100 -- Átalakítja másodperccé (pl. 10 -> 0.1)
+end)
