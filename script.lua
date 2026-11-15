@@ -5,7 +5,6 @@ local tweeninfo = TweenInfo.new
 local input = game:GetService("UserInputService")
 local run = game:GetService("RunService")
 local Utility = {}
-local Objects = {}
 
 function Kavo:DraggingEnabled(frame, parent)
     parent = parent or frame
@@ -472,7 +471,7 @@ function Kavo.CreateLib(kavName, themeList)
     return Tabs
 end
 
--- [3. RÉSZ: JÁTÉK LOGIKA]
+-- [3. RÉSZ: JÁTÉK LOGIKA ÉS EGYEZTETÉS]
 local Window = Kavo.CreateLib("Valley Prison Weapon Dropper", "DarkTheme")
 
 local _G = _G or {}
