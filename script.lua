@@ -1,5 +1,5 @@
 -- Modern UI a Valley Prison Fegyver Spawnolóhoz
-local Library = loadstring(game:HttpGet("https://githubusercontent.com"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
 local Window = Library.CreateLib("Valley Prison Weapon Dropper", "DarkTheme")
 
 -- Fő beállítások tárolása
