@@ -1,9 +1,11 @@
---// VALLEY PRISON - HIGH VISIBILITY NO-CHAT CONTROLLER V3
+--// VALLEY PRISON - HIGH VISIBILITY CONTROLLER V4 (WITH MINIMIZE & CLOSE)
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local ToggleBtn = Instance.new("TextButton")
 local WeaponBtn = Instance.new("TextButton")
 local TitleLabel = Instance.new("TextLabel")
+local MinimizeBtn = Instance.new("TextButton")
+local CloseBtn = Instance.new("TextButton")
 
 -- Takarítás futtatás előtt
 for _, v in pairs(game.CoreGui:GetChildren()) do
@@ -17,7 +19,7 @@ ScreenGui.Parent = game.CoreGui
 ScreenGui.DisplayOrder = 99999
 ScreenGui.IgnoreGuiInset = true
 
--- FŐ PANEL: Kék szegély (ZIndex = 1)
+-- FŐ PANEL
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
@@ -28,18 +30,44 @@ MainFrame.Size = UDim2.new(0, 260, 0, 160)
 MainFrame.Active = true
 MainFrame.Selectable = true
 MainFrame.ZIndex = 1
+MainFrame.ClipsDescendants = true
 
 TitleLabel.Parent = MainFrame
 TitleLabel.BackgroundTransparency = 1
-TitleLabel.Position = UDim2.new(0, 0, 0, 5)
-TitleLabel.Size = UDim2.new(1, 0, 0, 25)
+TitleLabel.Position = UDim2.new(0, 10, 0, 5)
+TitleLabel.Size = UDim2.new(0, 150, 0, 25)
 TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.Text = "VALLEY DROPPER V3"
+TitleLabel.Text = "VALLEY DROPPER"
 TitleLabel.TextColor3 = Color3.fromRGB(0, 162, 255)
-TitleLabel.TextSize = 16
+TitleLabel.TextSize = 14
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 TitleLabel.ZIndex = 2
 
--- DROP GOMB: Legfelső réteg (ZIndex = 10), hogy biztosan érzékelje a kattintást!
+-- MINIMIALIZÁLÓ GOMB (-)
+MinimizeBtn.Name = "MinimizeBtn"
+MinimizeBtn.Parent = MainFrame
+MinimizeBtn.BackgroundTransparency = 1
+MinimizeBtn.Position = UDim2.new(0, 190, 0, 5)
+MinimizeBtn.Size = UDim2.new(0, 30, 0, 25)
+MinimizeBtn.Font = Enum.Font.GothamBold
+MinimizeBtn.Text = "-"
+MinimizeBtn.TextColor3 = Color3.fromRGB(240, 190, 40)
+MinimizeBtn.TextSize = 20
+MinimizeBtn.ZIndex = 10
+
+-- BEZÁRÓ GOMB (X)
+CloseBtn.Name = "CloseBtn"
+CloseBtn.Parent = MainFrame
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.Position = UDim2.new(0, 220, 0, 5)
+CloseBtn.Size = UDim2.new(0, 30, 0, 25)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(230, 70, 70)
+CloseBtn.TextSize = 14
+CloseBtn.ZIndex = 10
+
+-- DROP GOMB
 ToggleBtn.Name = "ToggleBtn"
 ToggleBtn.Parent = MainFrame
 ToggleBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
@@ -52,7 +80,7 @@ ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleBtn.TextSize = 14
 ToggleBtn.ZIndex = 10
 
--- FEGYVER GOMB: Szintén felül (ZIndex = 10)
+-- FEGYVER GOMB
 WeaponBtn.Name = "WeaponBtn"
 WeaponBtn.Parent = MainFrame
 WeaponBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
@@ -65,7 +93,7 @@ WeaponBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
 WeaponBtn.TextSize = 12
 WeaponBtn.ZIndex = 10
 
--- Ablakmozgatás logikája
+-- Ablakmozgatás logikája (A fejléc üres részét megfogva húzható)
 local UserInputService = game:GetService("UserInputService")
 local dragging, dragInput, dragStart, startPos
 MainFrame.InputBegan:Connect(function(input)
@@ -86,6 +114,28 @@ UserInputService.InputChanged:Connect(function(input)
         local delta = input.Position - dragStart
         MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
+end)
+
+-- Minimalizálás működése
+local isMinimized = false
+MinimizeBtn.Activated:Connect(function()
+    isMinimized = not isMinimized
+    if isMinimized then
+        MainFrame:TweenSize(UDim2.new(0, 260, 0, 35), "Out", "Quad", 0.12, true)
+        MinimizeBtn.Text = "+"
+        ToggleBtn.Visible = false
+        WeaponBtn.Visible = false
+    else
+        MainFrame:TweenSize(UDim2.new(0, 260, 0, 160), "Out", "Quad", 0.12, true)
+        MinimizeBtn.Text = "-"
+        ToggleBtn.Visible = true
+        WeaponBtn.Visible = true
+    end
+end)
+
+-- Bezárás működése
+CloseBtn.Activated:Connect(function()
+    ScreenGui:Destroy()
 end)
 
 -- [ JÁTÉK LOGIKA ]
@@ -113,7 +163,7 @@ task.spawn(function()
     end
 end)
 
--- Kattintás kezelés megerősített eseménnyel
+-- Kattintás kezelés
 ToggleBtn.Activated:Connect(function()
     _G.Dropping = not _G.Dropping
     if _G.Dropping then
